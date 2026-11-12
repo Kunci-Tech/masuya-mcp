@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Masuya Catalog — Public API &amp; MCP Reference</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:0 20px 80px; background:#f6f7f9; color:#1f2733;
+         font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+  main { max-width:1080px; margin:0 auto; }
+  header { background:linear-gradient(135deg,#0f5c4a,#1b8a6b); color:#fff; padding:38px 34px;
+            border-radius:0 0 18px 18px; margin-bottom:26px; }
+  header h1 { margin:0 0 6px; font-size:30px; letter-spacing:-.4px; }
+  header p { margin:0; opacity:.92; }
+  .badge { display:inline-block; background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.4);
+            padding:3px 10px; border-radius:20px; font-size:12px; margin:12px 8px 0 0; }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin:22px 0 30px; }
+  .stat { background:#fff; border:1px solid #e2e7ec; border-radius:12px; padding:16px; text-align:center; }
+  .stat-n { display:block; font-size:24px; font-weight:700; color:#0f5c4a; }
+  .stat-l { display:block; font-size:12px; color:#647082; text-transform:uppercase; letter-spacing:.6px; }
+  h2 { margin:34px 0 12px; font-size:20px; border-bottom:2px solid #d7e3dd; padding-bottom:8px; color:#0f5c4a; }
+  h3 { font-size:16px; margin:22px 0 8px; }
+  section { background:#fff; border:1px solid #e2e7ec; border-radius:12px; padding:8px 22px 22px; margin-bottom:20px; }
+  table { width:100%; border-collapse:collapse; font-size:13.5px; }
+  th { background:#eef4f1; text-align:left; padding:9px 10px; border-bottom:2px solid #cde0d7; color:#0f5c4a; }
+  td { padding:8px 10px; border-bottom:1px solid #edf0f2; vertical-align:top; }
+  tr:last-child td { border-bottom:none; }
+  td:first-child { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; white-space:nowrap; }
+  code { background:#eef2f4; padding:1px 5px; border-radius:4px; font-size:13px; }
+  ul { columns:2; column-gap:36px; padding-left:20px; }
+  li { break-inside:avoid; margin-bottom:4px; }
+  .note { background:#fff8e6; border-left:4px solid #e0a52b; padding:12px 16px; border-radius:6px; }
+  .good { background:#e9f6ef; border-left:4px solid #1b8a6b; padding:12px 16px; border-radius:6px; }
+  footer { color:#647082; font-size:12px; text-align:center; margin-top:30px; }
+  a { color:#0f5c4a; }
+  @media (max-width:700px) { ul { columns:1; } td:first-child { white-space:normal; } }
+</style>
+</head>
+<body>
+<header><main>
+  <h1>Masuya Catalog — Public API &amp; MCP Reference</h1>
+  <p>PT Masuya Graha Trikencana · <a href="https://masuya.co.id/product" style="color:#fff">masuya.co.id/product</a></p>
+  <span class="badge">No login required</span>
+  <span class="badge">No API key</span>
+  <span class="badge">Read-only GET</span>
+  <span class="badge">No prices published</span>
+  <span class="badge">Recon: 2026-11-12</span>
+</main></header>
+<main>
+<div class="stats"><div class="stat"><span class="stat-n">613</span><span class="stat-l">Products</span></div><div class="stat"><span class="stat-n">62</span><span class="stat-l">Listing pages</span></div><div class="stat"><span class="stat-n">10</span><span class="stat-l">Categories</span></div><div class="stat"><span class="stat-n">15</span><span class="stat-l">Subcategories</span></div><div class="stat"><span class="stat-n">119</span><span class="stat-l">Brands</span></div><div class="stat"><span class="stat-n">None</span><span class="stat-l">Authentication</span></div></div>
+
+<section>
+  <h2>1. What this is</h2>
+  <p>Public marketing catalog for Japanese / western food ingredients distributed in Indonesia. NONE. No login, no API key, no session token, no cookies are required for any GET described here.</p>
+  <p class="good"><b>Safety:</b> All access in this project is read-only GET. Inquiry/contact POST endpoints exist on the site and are intentionally NOT used.</p>
+  <p>Inferred stack: Laravel (XSRF-TOKEN / masuya_session cookies, Blade templates), jQuery 1.11 + 3.6, server-rendered HTML.. There is <b>no public JSON product API</b>;
+     data is extracted from server-rendered HTML.</p>
+</section>
+
+<section>
+  <h2>2. HTTP surface</h2>
+  <table><thead><tr><th>Endpoint</th><th>Description</th><th>Example / response</th></tr></thead><tbody><tr><td>GET /product</td><td>Main product grid, server-rendered. 10 product cards per page.</td><td>text/html; charset=UTF-8</td></tr><tr><td>GET /product?page=N</td><td>Paginated grid. Filters are preserved in the generated pagination links.</td><td>https://masuya.co.id/product?page=2</td></tr><tr><td>GET /product?keyword=TEXT</td><td>Server-side product search. Also matches descriptions/tags, so results are broader than name-only search.</td><td>https://masuya.co.id/product?keyword=cheese</td></tr><tr><td>GET /product?cat=B64ID</td><td>Top-level category filter. 10 categories.</td><td>https://masuya.co.id/product?cat=MTg%3D  (Dairy)</td></tr><tr><td>GET /product?cat=B64ID&amp;sub=B64ID</td><td>Subcategory filter. 39 subcategories across all categories.</td><td>https://masuya.co.id/product?cat=MTg%3D&amp;sub=NDc%3D  (Dairy &gt; Cheese)</td></tr><tr><td>GET /product?brand=B64ID[,B64ID...]</td><td>Brand filter; the site&#x27;s own JavaScript joins multiple checkbox values with commas. 119 brand values.</td><td>https://masuya.co.id/product?brand=MTMz,MTM0</td></tr><tr><td>GET /product?sort=VALUE</td><td>Sort order from the #filterSort select.</td><td></td></tr><tr><td>GET /SLUG</td><td>Product detail page. SLUG IS CASE-SENSITIVE (e.g. /q083m works, /Q083M returned 404 during recon; /C559M works). Always use the exact href from the listing.</td><td>https://masuya.co.id/df0027</td></tr><tr><td>GET /sitemap.xml</td><td>XML sitemap with 422 &lt;loc&gt; entries: ~177 category/subcategory filter URLs, ~220 product-detail URLs, plus site, news and localized pages. It is noisier and less complete than the 613-product grid, which is the authoritative source. Sitemap slugs can differ in case from listing slugs.</td><td></td></tr><tr><td>GET /listProductCategory?page=N&amp;url=product</td><td>AJAX &#x27;load more&#x27; used by the #loadMore button in js/product.js. Returns {&quot;html&quot;:&quot;...&quot;,&quot;loadmore&quot;:bool}. Without a browser session it returned {&quot;html&quot;:&quot;&quot;,&quot;loadmore&quot;:false}, so this project uses plain ?page=N instead.</td><td>application/json</td></tr><tr><td>GET /search?keyword=TEXT</td><td>Separate site-wide search page (news/recipes/pages), NOT the product grid. Returns no product-list__item cards. Not used by this MCP.</td><td></td></tr><tr><td>GET /produk</td><td>Indonesian-language alias of /product; renders the same 10-card grid.</td><td></td></tr><tr><td>GET /catalog-en</td><td>Catalog landing page. No downloadable PDF links were found in its HTML.</td><td></td></tr><tr><td>NOT USED (write / personal-data endpoints)</td><td>Intentionally NOT used: POST /contact-us-product (product inquiry form, requires CSRF token + reCAPTCHA); POST newsletter/subscription form; Any account, cart or checkout route; Google reCAPTCHA API (loaded by the page but never invoked by this project)</td><td>write / personal-data routes</td></tr></tbody></table>
+  <h3>Query parameters</h3>
+  <table><thead><tr><th>Parameter</th><th>Meaning</th></tr></thead><tbody><tr><td>keyword</td><td>Free text product search.</td></tr><tr><td>cat</td><td>Base64-encoded category id, e.g. MTg= (18 = Dairy). URL-encode &#x27;=&#x27; as %3D.</td></tr><tr><td>sub</td><td>Base64-encoded subcategory id, e.g. NDc= (47 = Cheese). Some values have no padding, e.g. MTQz (143).</td></tr><tr><td>brand</td><td>Base64-encoded brand id, comma-separated for multiple brands, e.g. MTMz (133 = Yamamotoyama).</td></tr><tr><td>page</td><td>1-based page number.</td></tr><tr><td>sort</td><td>asc | desc | alphabet-asc | alphabet-desc.</td></tr></tbody></table>
+  <h3>ID encoding</h3>
+  <p>base64 of the decimal database id, sometimes with &#x27;=&#x27; padding and sometimes without. Pass the encoded value through unchanged; the client exposes a decoded numeric id only for readability.</p>
+  <p><code>MTg= -&gt; 18 (Dairy); NDc= -&gt; 47 (Cheese); Mzc= -&gt; 37 (Groceries); MTMz -&gt; 133 (Yamamotoyama); MTQz -&gt; 143 (Seaweed)</code></p>
+</section>
+
+<section>
+  <h2>3. Catalog shape</h2>
+  <table><thead><tr><th>Category</th><th>Filter id</th><th>Products</th><th>Subcategories</th></tr></thead><tbody><tr><td>Dairy</td><td>MTg=</td><td>0</td><td>Cheese, Butter, Yogurt, Milk, Cream</td></tr><tr><td>Groceries</td><td>Mzc=</td><td>0</td><td>Seaweed, Snacks, Cooking Oil, Noodle, Flour, Vegetable, Tofu, Pickles</td></tr><tr><td>Meat</td><td>MTc=</td><td>0</td><td>Others, Beef</td></tr><tr><td>Seafood</td><td>MjA=</td><td>0</td><td>—</td></tr><tr><td>Sauce &amp; Seasoning</td><td>NDA=</td><td>0</td><td>—</td></tr><tr><td>Beverages</td><td>MjE=</td><td>0</td><td>—</td></tr><tr><td>Non Dairy</td><td>Mzg=</td><td>0</td><td>—</td></tr><tr><td>Fruit Based Product</td><td>MzI=</td><td>0</td><td>—</td></tr><tr><td>Pastry</td><td>NDI=</td><td>0</td><td>—</td></tr><tr><td>Processed Food</td><td>Mzk=</td><td>0</td><td>—</td></tr></tbody></table>
+  <h3>Top brands in the snapshot</h3>
+  <table><thead><tr><th>Brand</th><th>Products</th></tr></thead><tbody><tr><td>Greenfield</td><td>54</td></tr><tr><td>Heavenly Blush</td><td>38</td></tr><tr><td>Kewpie</td><td>26</td></tr><tr><td>No Brand</td><td>25</td></tr><tr><td>Nissin</td><td>22</td></tr><tr><td>Beerenberg</td><td>20</td></tr><tr><td>Andros</td><td>20</td></tr><tr><td>DLA Naturals</td><td>15</td></tr><tr><td>Hinode</td><td>14</td></tr><tr><td>Mizkan</td><td>13</td></tr><tr><td>Kin</td><td>13</td></tr><tr><td>House</td><td>12</td></tr><tr><td>Kokita</td><td>11</td></tr><tr><td>Tarami</td><td>11</td></tr><tr><td>President</td><td>10</td></tr></tbody></table>
+  <p class="note">Some catalog products share identical names (variants under different slugs), and 25 products
+     carry the literal brand label <code>No Brand</code>. Always key on <code>slug</code>, not on name.</p>
+</section>
+
+<section>
+  <h2>4. Published vs missing data</h2>
+  <h3>Available per product</h3>
+  <ul><li>name</li><li>brand</li><li>slug / URL</li><li>image URL</li><li>item code (derived from image filename or slug)</li><li>description</li><li>packaging (carton configuration, e.g. 12X1000ML)</li><li>storage (CHILLER / FROZEN / DRY / CHILLER AC)</li><li>packing size (e.g. 1000 ml, 200 gr)</li><li>category and subcategory membership</li></ul>
+  <h3>Not published — do not invent</h3>
+  <ul><li><b>price</b> — No prices anywhere. The site is inquiry-based; every product has a &#x27;MAKE A INQUIRY&#x27; CTA.</li><li><b>stock</b> — No availability or stock counts.</li><li><b>ingredients</b> — No composition / ingredient list.</li><li><b>halal</b> — No halal certificate field.</li><li><b>nutrition</b> — No nutritional information.</li><li><b>origin</b> — No country-of-origin field (brand names often imply it, but this is not confirmed data).</li><li><b>minimum_order</b> — No MOQ or order quantity.</li><li><b>consequence</b> — Price comparisons, ingredient-level substitution decisions and quality guarantees cannot be made from public data alone. Request specs and samples from a sales representative.</li></ul>
+  <p class="note"><b>Price comparisons, ingredient-level substitution decisions and quality guarantees cannot be made from public data alone. Request specs and samples from a sales representative.</b></p>
+</section>
+
+<section>
+  <h2>5. MCP tools &amp; resources</h2>
+  <ul><li><code>masuya_catalog_status</code></li><li><code>masuya_list_categories</code></li><li><code>masuya_list_brands</code></li><li><code>masuya_search_products</code></li><li><code>masuya_live_search</code></li><li><code>masuya_list_products</code></li><li><code>masuya_get_product</code></li><li><code>masuya_compare_products</code></li><li><code>masuya_find_alternatives</code></li><li><code>masuya_category_products</code></li><li><code>masuya_match_names</code></li><li><code>masuya_catalog_stats</code></li><li><code>masuya_sitemap</code></li><li><code>masuya_api_map</code></li><li><code>masuya_refresh_catalog</code></li></ul>
+  <h3>Resources</h3>
+  <ul><li><code>masuya://api-map</code></li><li><code>masuya://catalog</code></li><li><code>masuya://categories</code></li><li><code>masuya://brands</code></li></ul>
+  <p>All tools are read-only. Results include typed <code>structuredContent</code>; oversized results are truncated
+     as valid JSON with a <code>_truncated</code> notice. Search hits carry <code>match_quality</code>
+     (strong / possible / weak) and <code>masuya_match_names</code> reports
+     <code>likely_absent_from_catalog</code>, so a loose token hit is never mistaken for a real product.</p>
+  <h3>Compared with the Sukanda MCP</h3>
+  <p><b>Sukanda:</b> Authenticated buyer API (JWT), prices, stock, purchase history, order data, ingredient composition.<br>
+     <b>Masuya:</b> Public marketing catalog, no login, no prices, no stock, no order data, no ingredient composition.<br>
+     <b>Usage:</b> Use Sukanda for buy/pricing decisions and Masuya for range discovery and alternative shortlists; never compare prices between them from public data.</p>
+</section>
+
+<section>
+  <h2>6. Politeness &amp; verification</h2>
+  <p><b>Observed:</b> No rate limit or 429 was encountered while crawling 62 listing pages plus category pages.</p>
+  <p><b>Client policy:</b> 0.12 s minimum interval between requests, 2 retries, 25 s timeout, in-memory 10-minute HTTP cache, 7-day detail cache, and a bundled catalog_index.json snapshot so ordinary questions need zero new requests.</p>
+  <p><b>Scope:</b> Only public GET requests to the pages listed above. No POST, no forms, no reCAPTCHA, no account data, no credentials.</p>
+  <table><thead><tr><th>Check</th><th>Observed</th></tr></thead><tbody><tr><td>listing_page_1</td><td>10 cards, pagination last page 62</td></tr><tr><td>listing_page_62</td><td>3 cards, pagination last page 62</td></tr><tr><td>listing_page_63</td><td>0 cards</td></tr><tr><td>keyword_cheese</td><td>10 cards on page 1, includes Mozzarella Shredded Cheese Pouch (Greenfield), Ricotta Cheese, Kewpie Cooking Sauce Cheese Mayo, Nissin Gekikara Carbonara</td></tr><tr><td>cat_Dairy</td><td>10 cards on page 1, 13 pages total</td></tr><tr><td>brand_Yamamotoyama</td><td>1 card</td></tr><tr><td>detail_df0027</td><td>{&quot;name&quot;: &quot;Whipping Cream&quot;, &quot;brand_from_listing&quot;: &quot;Greenfield&quot;, &quot;packaging&quot;: &quot;12X1000ML&quot;, &quot;storage&quot;: &quot;CHILLER&quot;, &quot;packing_size&quot;: &quot;1000 ml&quot;}</td></tr><tr><td>detail_mozzarella</td><td>{&quot;name&quot;: &quot;Mozzarella Shredded Cheese Pouch&quot;, &quot;packaging&quot;: &quot;12 X 200 GR&quot;, &quot;storage&quot;: &quot;CHILLER&quot;, &quot;packing_size&quot;: &quot;200 gr&quot;}</td></tr><tr><td>case_sensitivity</td><td>/q083m -&gt; 200, /Q083M -&gt; 404, /C559M -&gt; 200</td></tr></tbody></table>
+</section>
+
+<footer>Generated by build_reference.py from api_map.json and catalog_index.json · No external assets · No credentials</footer>
+</main>
+</body>
+</html>

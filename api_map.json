@@ -1,0 +1,164 @@
+{
+  "overview": {
+    "supplier": "PT Masuya Graha Trikencana",
+    "website": "https://masuya.co.id",
+    "catalog": "https://masuya.co.id/product",
+    "purpose": "Public marketing catalog for Japanese / western food ingredients distributed in Indonesia.",
+    "authentication": "NONE. No login, no API key, no session token, no cookies are required for any GET described here.",
+    "stack_inferred": "Laravel (XSRF-TOKEN / masuya_session cookies, Blade templates), jQuery 1.11 + 3.6, server-rendered HTML.",
+    "transport": "HTTPS, plain HTML GET requests. There is no public JSON product API.",
+    "safety": "All access in this project is read-only GET. Inquiry/contact POST endpoints exist on the site and are intentionally NOT used.",
+    "recon_date": "2026-11-12"
+  },
+  "endpoints": {
+    "GET /product": {
+      "description": "Main product grid, server-rendered. 10 product cards per page.",
+      "pagination": "62 pages, 613 unique products (61 full pages of 10 + 3 on page 62). Page 63 returns an empty grid.",
+      "response": "text/html; charset=UTF-8",
+      "contains": ["product grid", "category tree sidebar", "brand checkbox list", "pagination links", "popup category menu"]
+    },
+    "GET /product?page=N": {
+      "description": "Paginated grid. Filters are preserved in the generated pagination links.",
+      "example": "https://masuya.co.id/product?page=2"
+    },
+    "GET /product?keyword=TEXT": {
+      "description": "Server-side product search. Also matches descriptions/tags, so results are broader than name-only search.",
+      "minimum_input": "Site search form in the header requires 3 characters; the product banner form has no such client-side limit.",
+      "example": "https://masuya.co.id/product?keyword=cheese"
+    },
+    "GET /product?cat=B64ID": {
+      "description": "Top-level category filter. 10 categories.",
+      "example": "https://masuya.co.id/product?cat=MTg%3D  (Dairy)"
+    },
+    "GET /product?cat=B64ID&sub=B64ID": {
+      "description": "Subcategory filter. 39 subcategories across all categories.",
+      "example": "https://masuya.co.id/product?cat=MTg%3D&sub=NDc%3D  (Dairy > Cheese)"
+    },
+    "GET /product?brand=B64ID[,B64ID...]": {
+      "description": "Brand filter; the site's own JavaScript joins multiple checkbox values with commas. 119 brand values.",
+      "example": "https://masuya.co.id/product?brand=MTMz,MTM0"
+    },
+    "GET /product?sort=VALUE": {
+      "description": "Sort order from the #filterSort select.",
+      "values": ["asc (Latest)", "desc (Oldest)", "alphabet-asc (A-Z)", "alphabet-desc (Z-A)"]
+    },
+    "GET /SLUG": {
+      "description": "Product detail page. SLUG IS CASE-SENSITIVE (e.g. /q083m works, /Q083M returned 404 during recon; /C559M works). Always use the exact href from the listing.",
+      "example": "https://masuya.co.id/df0027",
+      "response": "text/html, ~189 KB (most of it is the shared inquiry popup and footer)"
+    },
+    "GET /sitemap.xml": {
+      "description": "XML sitemap with 422 <loc> entries: ~177 category/subcategory filter URLs, ~220 product-detail URLs, plus site, news and localized pages. It is noisier and less complete than the 613-product grid, which is the authoritative source. Sitemap slugs can differ in case from listing slugs.",
+      "robots": "https://masuya.co.id/robots.txt allows all and points to the sitemap."
+    },
+    "GET /listProductCategory?page=N&url=product": {
+      "description": "AJAX 'load more' used by the #loadMore button in js/product.js. Returns {\"html\":\"...\",\"loadmore\":bool}. Without a browser session it returned {\"html\":\"\",\"loadmore\":false}, so this project uses plain ?page=N instead.",
+      "response": "application/json"
+    },
+    "GET /search?keyword=TEXT": {
+      "description": "Separate site-wide search page (news/recipes/pages), NOT the product grid. Returns no product-list__item cards. Not used by this MCP."
+    },
+    "GET /produk": {
+      "description": "Indonesian-language alias of /product; renders the same 10-card grid."
+    },
+    "GET /catalog-en": {
+      "description": "Catalog landing page. No downloadable PDF links were found in its HTML."
+    },
+    "NOT USED (write / personal-data endpoints)": [
+      "POST /contact-us-product (product inquiry form, requires CSRF token + reCAPTCHA)",
+      "POST newsletter/subscription form",
+      "Any account, cart or checkout route",
+      "Google reCAPTCHA API (loaded by the page but never invoked by this project)"
+    ]
+  },
+  "query_parameters": {
+    "keyword": "Free text product search.",
+    "cat": "Base64-encoded category id, e.g. MTg= (18 = Dairy). URL-encode '=' as %3D.",
+    "sub": "Base64-encoded subcategory id, e.g. NDc= (47 = Cheese). Some values have no padding, e.g. MTQz (143).",
+    "brand": "Base64-encoded brand id, comma-separated for multiple brands, e.g. MTMz (133 = Yamamotoyama).",
+    "page": "1-based page number.",
+    "sort": "asc | desc | alphabet-asc | alphabet-desc."
+  },
+  "id_encoding": {
+    "format": "base64 of the decimal database id, sometimes with '=' padding and sometimes without.",
+    "examples": {"MTg=": "18 (Dairy)", "NDc=": "47 (Cheese)", "Mzc=": "37 (Groceries)", "MTMz": "133 (Yamamotoyama)", "MTQz": "143 (Seaweed)"},
+    "handling": "Pass the encoded value through unchanged; the client exposes a decoded numeric id only for readability."
+  },
+  "html_selectors": {
+    "product_card": "a.product-list__item -> href = product URL",
+    "product_name": "a.product-list__item figcaption h4",
+    "product_brand": "a.product-list__item figcaption h5",
+    "product_image": "a.product-list__item figure img[src] (the filename's first token is usually the item code, e.g. 'DF0027  GF WHIPPING CREAM 1LT.png.webp')",
+    "pagination": "div.pagination a[href*='page=']; the last numeric link is the final page (62)",
+    "category_tree": "div.side-left__box--category ul li > a[href*='product?cat='] and nested li > a[href*='&sub=']",
+    "brand_list": "input[origin=brand].selectedCheck[value] followed by the nearest <label>",
+    "detail_title": "div.product-detail__description h2",
+    "detail_description": "plain text between </h2> and div.box-spec",
+    "detail_specs": "div.box-spec__list > span > b (label) + span (value)",
+    "detail_images": "div.slider-large__list figure img[src]",
+    "detail_quirks": [
+      "Spec rows are sometimes duplicated (e.g. /ume-jelly) - deduplicate by label.",
+      "Some products have an empty description.",
+      "The detail page does NOT repeat the brand; it is joined from the listing card.",
+      "Most of the ~189 KB page is an inquiry popup / country dropdown; slice at div.product-detail."
+    ]
+  },
+  "categories": [
+    {"name": "Dairy", "value": "MTg=", "subcategories": ["Cheese", "Butter", "Yogurt", "Milk", "Cream"]},
+    {"name": "Groceries", "value": "Mzc=", "subcategories": ["Seaweed", "Snacks", "Cooking Oil", "Noodle", "Flour", "Vegetable", "Tofu", "Pickles"]},
+    {"name": "Meat", "value": "MTc=", "subcategories": ["Others", "Beef"]},
+    {"name": "Seafood", "value": "MjA="},
+    {"name": "Sauce & Seasoning", "value": "NDA="},
+    {"name": "Beverages", "value": "MjE="},
+    {"name": "Non Dairy", "value": "Mzg="},
+    {"name": "Fruit Based Product", "value": "MzI="},
+    {"name": "Pastry", "value": "NDI="},
+    {"name": "Processed Food", "value": "Mzk="}
+  ],
+  "published_product_fields": [
+    "name", "brand", "slug / URL", "image URL", "item code (derived from image filename or slug)",
+    "description", "packaging (carton configuration, e.g. 12X1000ML)", "storage (CHILLER / FROZEN / DRY / CHILLER AC)",
+    "packing size (e.g. 1000 ml, 200 gr)", "category and subcategory membership"
+  ],
+  "data_not_published": {
+    "price": "No prices anywhere. The site is inquiry-based; every product has a 'MAKE A INQUIRY' CTA.",
+    "stock": "No availability or stock counts.",
+    "ingredients": "No composition / ingredient list.",
+    "halal": "No halal certificate field.",
+    "nutrition": "No nutritional information.",
+    "origin": "No country-of-origin field (brand names often imply it, but this is not confirmed data).",
+    "minimum_order": "No MOQ or order quantity.",
+    "consequence": "Price comparisons, ingredient-level substitution decisions and quality guarantees cannot be made from public data alone. Request specs and samples from a sales representative."
+  },
+  "rate_limiting_and_ethics": {
+    "observed": "No rate limit or 429 was encountered while crawling 62 listing pages plus category pages.",
+    "client_policy": "0.12 s minimum interval between requests, 2 retries, 25 s timeout, in-memory 10-minute HTTP cache, 7-day detail cache, and a bundled catalog_index.json snapshot so ordinary questions need zero new requests.",
+    "scope": "Only public GET requests to the pages listed above. No POST, no forms, no reCAPTCHA, no account data, no credentials.",
+    "recommendation": "Refresh the snapshot at most daily; scrape responsibly and respect robots.txt."
+  },
+  "mcp_tools": [
+    "masuya_catalog_status", "masuya_list_categories", "masuya_list_brands", "masuya_search_products",
+    "masuya_live_search", "masuya_list_products", "masuya_get_product", "masuya_compare_products",
+    "masuya_find_alternatives", "masuya_category_products", "masuya_match_names",
+    "masuya_catalog_stats", "masuya_sitemap", "masuya_api_map", "masuya_refresh_catalog"
+  ],
+  "mcp_resources": [
+    "masuya://api-map", "masuya://catalog", "masuya://categories", "masuya://brands"
+  ],
+  "verification": {
+    "listing_page_1": "10 cards, pagination last page 62",
+    "listing_page_62": "3 cards, pagination last page 62",
+    "listing_page_63": "0 cards",
+    "keyword_cheese": "10 cards on page 1, includes Mozzarella Shredded Cheese Pouch (Greenfield), Ricotta Cheese, Kewpie Cooking Sauce Cheese Mayo, Nissin Gekikara Carbonara",
+    "cat_Dairy": "10 cards on page 1, 13 pages total",
+    "brand_Yamamotoyama": "1 card",
+    "detail_df0027": {"name": "Whipping Cream", "brand_from_listing": "Greenfield", "packaging": "12X1000ML", "storage": "CHILLER", "packing_size": "1000 ml"},
+    "detail_mozzarella": {"name": "Mozzarella Shredded Cheese Pouch", "packaging": "12 X 200 GR", "storage": "CHILLER", "packing_size": "200 gr"},
+    "case_sensitivity": "/q083m -> 200, /Q083M -> 404, /C559M -> 200"
+  },
+  "comparison_with_sukanda_mcp": {
+    "sukanda": "Authenticated buyer API (JWT), prices, stock, purchase history, order data, ingredient composition.",
+    "masuya": "Public marketing catalog, no login, no prices, no stock, no order data, no ingredient composition.",
+    "shared_use_case": "Use Sukanda for buy/pricing decisions and Masuya for range discovery and alternative shortlists; never compare prices between them from public data."
+  }
+}

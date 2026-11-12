@@ -1,0 +1,19 @@
+# Local runtime caches (public data, but regenerated on demand)
+details_cache.json
+*.tmp
+
+# Never publish credential files - this MCP does not need any
+.env
+.env.*
+!.env.example
+credentials.json
+token.json
+secrets.json
+mcp-config.local.json
+
+# Python / editor noise
+__pycache__/
+*.py[cod]
+.DS_Store
+.venv/
+venv/

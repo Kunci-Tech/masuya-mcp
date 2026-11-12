@@ -1,0 +1,23 @@
+{
+  "_comment": "Paste this into your MCP client config, replacing the server.py path with your absolute local path. No credentials, no env vars and no login are required.",
+  "mcpServers": {
+    "masuya-catalog": {
+      "command": "python3",
+      "args": ["/absolute/path/to/masuya-mcp/server.py"],
+      "env": {}
+    }
+  },
+  "_side_by_side_with_sukanda": {
+    "_comment": "Both servers can be enabled at the same time. Sukanda needs credentials; Masuya needs none.",
+    "mcpServers": {
+      "sukanda-onelink": {
+        "command": "python3",
+        "args": ["/absolute/path/to/sukanda-mcp/server.py"]
+      },
+      "masuya-catalog": {
+        "command": "python3",
+        "args": ["/absolute/path/to/masuya-mcp/server.py"]
+      }
+    }
+  }
+}
